@@ -1,6 +1,6 @@
 import asyncio
 from ixccontainer import IxcContainer
-from query import read_json_async, query_JSON_data_and_create_container
+from query import read_json_async, init_parser
 
 
 def createIxcContainer(args=[]):
@@ -10,9 +10,20 @@ def createIxcContainer(args=[]):
 async def main(fn):
     gen = read_json_async(fn)
 
+    queries = [
+        "name",
+        "state.cpu.usage",
+        "state.memory.usage",
+        "created_at",
+        "status",
+        "state.network.* | [?addresses].addresses[].address",
+    ]
+
+    parse = init_parser(queries)
+
     for _ in range(2):
         item = await anext(gen)
-        args = query_JSON_data_and_create_container(item)
+        args = parse(item)
         container = createIxcContainer(args)
         print(container)
 

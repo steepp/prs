@@ -9,22 +9,15 @@ async def read_json_async(filename):
         yield json_item
 
 
-def query_json(q, json_object):
+def parse_json(q, json_object):
     return jmespath.search(q, json_object)
 
 
-def query_JSON_data_and_create_container(json_object):
-    res = []
-    queries = [
-        "name",
-        "state.cpu.usage",
-        "state.memory.usage",
-        "created_at",
-        "status",
-        "state.network.* | [?addresses].addresses[].address",
-    ]
+def init_parser(queries):
+    def query_json(json_object):
+        res = []
+        for q in queries:
+            res.append(parse_json(q, json_object))
+        return res
 
-    for q in queries:
-        res.append(query_json(q, json_object))
-
-    return res
+    return query_json
