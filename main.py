@@ -1,52 +1,10 @@
-from dataclasses import dataclass
-from datetime import datetime, timezone
-import aiofiles
 import asyncio
-import ijson
-import jmespath
+from ixccontainer import IxcContainer
+from query import read_json_async, query_JSON_data_and_create_container
 
 
-async def read_json_async(filename):
-    f = await aiofiles.open(filename)
-    async for json_item in ijson.items_async(f, "item"):
-        yield json_item
-
-
-@dataclass
-class IxcContainer:
-    name: str
-    cpu_usage: int
-    memory_usage: int
-    created_at: datetime
-    status: str
-    ip_addresses: list
-
-    def __post_init__(self):
-        self.created_at = datetime.fromisoformat(self.created_at).astimezone(
-            timezone.utc
-        )
-
-
-def query_json(q, json_object):
-    return jmespath.search(q, json_object)
-
-
-def query_JSON_data_and_create_container(json_object):
-    args = []
-    queries = [
-        "name",
-        "state.cpu.usage",
-        "state.memory.usage",
-        "created_at",
-        "status",
-        "state.network.* | [?addresses].addresses[].address",
-    ]
-
-    for q in queries:
-        args.append(query_json(q, json_object))
-
-    container = IxcContainer(*args)
-    print(container)
+def createIxcContainer(args=[]):
+    return IxcContainer(*args)
 
 
 async def main(fn):
@@ -54,7 +12,9 @@ async def main(fn):
 
     for _ in range(2):
         item = await anext(gen)
-        query_JSON_data_and_create_container(item)
+        args = query_JSON_data_and_create_container(item)
+        container = createIxcContainer(args)
+        print(container)
 
 
 if __name__ == "__main__":
