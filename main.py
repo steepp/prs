@@ -39,7 +39,7 @@ def query_JSON_data_and_create_container(json_object):
         "state.memory.usage",
         "created_at",
         "status",
-        "state.network.*.hwaddr",
+        "state.network.* | [?addresses].addresses[].address",
     ]
 
     for q in queries:
