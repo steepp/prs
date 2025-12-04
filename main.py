@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import datetime, timezone
 import aiofiles
 import asyncio
 import ijson
@@ -17,9 +17,14 @@ class IxcContainer:
     name: str
     cpu_usage: int
     memory_usage: int
-    created_at: date
+    created_at: datetime
     status: str
     ip_addresses: list
+
+    def __post_init__(self):
+        self.created_at = datetime.fromisoformat(self.created_at).astimezone(
+            timezone.utc
+        )
 
 
 def query_json(q, json_object):
