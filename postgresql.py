@@ -6,14 +6,14 @@ class PostgreSQLClient:
         self.cfg = cfg
 
     async def connect(self):
-        self.pool = await asyncpg.create_pool(**self.cfg)
+        self._pool = await asyncpg.create_pool(**self.cfg)
 
     async def disconnect(self):
         assert self._pool is not None, "DatabaseBackend is not running"
-        await self.pool.close()
+        await self._pool.close()
 
     async def execute(self, query: str, *args):
-        async with self.pool.acquire() as conn:
+        async with self._pool.acquire() as conn:
             return await conn.fetch(query, *args)
 
 
