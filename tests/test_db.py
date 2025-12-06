@@ -1,51 +1,38 @@
 import pytest
-from testcontainers.postgres import PostgresContainer
 from postgresql import PostgreSQLClient
 
 
-@pytest.fixture(scope="module", autouse=True)
-def postgres():
-    postgres = PostgresContainer(
-        image="postgres:latest",
-        username="testuser",
-        password="testpass",
-        dbname="testdb",
-        port=5432,
-    )
-    postgres.start()
-    yield postgres
-    postgres.stop()
+@pytest.fixture()
+async def db_pool():
+    dsn = "postgresql://testuser:password@localhost:53140/testdb"
 
-
-@pytest.fixture(scope="module")
-async def db_proxy(postgres: PostgresContainer):
-    client = PostgreSQLClient(postgres.get_connection_url())
+    client = PostgreSQLClient(dsn)
 
     await client.connect()
 
-    await client.execute(
-        """
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            username TEXT UNIQUE NOT NULL,
-            email TEXT
-        )
-        """
-    )
     yield client
 
-    await client.execute("DROP TABLE IF EXISTS users")
     await client.disconnect()
 
 
 @pytest.mark.asyncio
-async def test_users_table_exists(db_proxy):
-    rows = await db_proxy.execute("""
+async def test_db_connection_established(db_pool):
+    await db_pool.execute(
+        """
+        CREATE TABLE IF NOT EXISTS names (
+              id serial PRIMARY KEY,
+              name VARCHAR (255) NOT NULL)
+        """
+    )
+
+    rows = await db_pool.fetch("""
         SELECT table_name
         FROM information_schema.tables
         WHERE table_schema = 'public'
-          AND table_name = 'users'
+          AND table_name = 'names'
     """)
 
     assert len(rows) == 1
-    assert rows[0]["table_name"] == "users"
+    assert rows[0]["table_name"] == "names"
+
+    await db_pool.execute("DROP TABLE IF EXISTS names")
