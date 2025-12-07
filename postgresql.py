@@ -23,10 +23,20 @@ class PostgreSQLClient:
 
 class DatabaseProxy:
     def __init__(self, db):
-        self.db = db
+        self._db = db
 
-    def saveOne(self, arg):
-        pass
+    def _create_placeholder_str(self, args=[]):
+        return ", ".join(f"${i + 1}" for i in range(len(args)))
+
+    def _columns_str(self, args=[]):
+        return ", ".join(f"{c}" for c in args)
+
+    async def saveOne(self, data, tname="containers"):
+        columns = self._columns_str(data.keys())
+        values = data.values()
+        placeholders = self._create_placeholder_str(values)
+        query = f"INSERT INTO {tname} ({columns}) VALUES ({placeholders})"
+        return await self._db.execute(query, *values)
 
     def getOne(self, arg):
         pass
