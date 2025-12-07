@@ -1,6 +1,33 @@
 import asyncio
 from ixccontainer import IxcContainer
 from query import read_json_async, init_parser
+from postgresql import PostgreSQLClient, DatabaseProxy
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def setup_database():
+    dsn = "postgresql://testuser:password@localhost:53140/testdb"
+    dbclient = PostgreSQLClient(dsn)
+    await dbclient.connect()
+    yield dbclient
+    await dbclient.disconnect()
+
+
+async def setup_table(client):
+    containers_table_table = """
+        CREATE TABLE IF NOT EXISTS ixccontainers (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            cpu_usage INTEGER NOT NULL,
+            memory_usage INTEGER NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            status VARCHAR(50) NOT NULL,
+            ip_addresses TEXT[] NOT NULL
+        )
+        """
+
+    await client.execute(containers_table_table)
 
 
 def createIxcContainer(args=[]):
@@ -21,11 +48,19 @@ async def main(fn):
 
     parse = init_parser(queries)
 
-    for _ in range(2):
+    async with setup_database() as db:
+        await setup_table(db)
+
+        dbproxy = DatabaseProxy(db)
+
+        # async for item in gen:
         item = await anext(gen)
         args = parse(item)
+
         container = createIxcContainer(args)
-        print(container)
+        print(container.name)
+
+        await dbproxy.saveOne(container)
 
 
 if __name__ == "__main__":
