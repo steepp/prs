@@ -1,13 +1,24 @@
+import os
 import asyncio
 from ixccontainer import IxcContainer
 from query import read_json_async, init_parser
 from postgresql import PostgreSQLClient, DatabaseProxy
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 @asynccontextmanager
 async def setup_database():
-    dsn = "postgresql://testuser:password@localhost:53140/testdb"
+    host = os.getenv("DBHOST", "localhost")
+    port = os.getenv("DBPORT", "5432")
+    username = os.getenv("DBUSER", "postgres")
+    password = os.getenv("DBPASSWORD", "postgres")
+    database = os.getenv("DBNAME", "postgres")
+
+    dsn = f"postgresql://{username}:{password}@{host}:{port}/{database}"
+
     dbclient = PostgreSQLClient(dsn)
     await dbclient.connect()
     yield dbclient
