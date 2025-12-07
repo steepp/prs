@@ -31,7 +31,7 @@ class DatabaseProxy:
     def _columns_str(self, args=[]):
         return ", ".join(f"{c}" for c in args)
 
-    async def saveOne(self, data, tname="containers"):
+    async def saveOne(self, data={}, tname="ixccontainers"):
         columns = self._columns_str(data.keys())
         values = data.values()
         placeholders = self._create_placeholder_str(values)

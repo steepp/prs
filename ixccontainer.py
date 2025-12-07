@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 
 
@@ -15,3 +15,9 @@ class IxcContainer:
         self.created_at = datetime.fromisoformat(self.created_at).astimezone(
             timezone.utc
         )
+
+    def keys(self):
+        return asdict(self).keys()
+
+    def values(self):
+        return asdict(self).values()
