@@ -66,14 +66,12 @@ async def main(fn):
 
         dbproxy = DatabaseProxy(db)
 
-        # async for item in gen:
-        item = await anext(gen)
-        args = parse(item)
+        async for item in gen:
+            args = parse(item)
 
-        container = createIxcContainer(args)
-        print(container.name)
+            container = createIxcContainer(args)
 
-        await dbproxy.saveOne(container)
+            await dbproxy.saveOne(container)
 
 
 if __name__ == "__main__":
@@ -83,6 +81,5 @@ if __name__ == "__main__":
     parser.add_argument("filename", help="A JSON file to parse.")
 
     args = parser.parse_args()
-    # print(args.filename)
 
     asyncio.run(main(args.filename))
