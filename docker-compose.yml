@@ -7,3 +7,10 @@ services:
       POSTGRES_USER: testuser
       POSTGRES_PASSWORD: password
       POSTGRES_DB: testdb
+
+  py-app:
+    build: .
+    depends_on:
+      - postgres01
+    env_file: .env
+    command: ["python", "main.py", "sample-data.json"]

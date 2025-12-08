@@ -1,0 +1,10 @@
+**/__pycache__
+**/.pytest_cache
+*.sh
+.git
+.env
+tests
+.DS_Store
+.gitignore
+.ruff_cache
+.venv
