@@ -3,6 +3,7 @@ services:
     image: postgres:latest
     ports:
       - "53140:5432"
+    env_file: .env
     environment:
       POSTGRES_USER: testuser
       POSTGRES_PASSWORD: password
@@ -13,4 +14,10 @@ services:
     depends_on:
       - postgres01
     env_file: .env
+    environment:
+      DBHOST: postgres01
+      DBPORT: 5432
+      DBNAME: testdb
+      DBUSER: testuser
+      DBPASSWORD: password
     command: ["python", "main.py", "sample-data.json"]
